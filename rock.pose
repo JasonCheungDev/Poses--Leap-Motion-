@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Pose xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <distances>
+    <float>0</float>
+    <float>0</float>
+    <float>0.120658204</float>
+    <float>0.09299776</float>
+    <float>0.0796735361</float>
+    <float>0</float>
+    <float>0.137282252</float>
+    <float>0.144014582</float>
+    <float>0.151203349</float>
+    <float>0</float>
+    <float>0.1499311</float>
+    <float>0.1596422</float>
+    <float>0.169092134</float>
+    <float>0</float>
+    <float>0.170101479</float>
+    <float>0.178222626</float>
+    <float>0.185423613</float>
+    <float>0</float>
+    <float>0.16133225</float>
+    <float>0.1709779</float>
+    <float>0.180189922</float>
+    <float>0.1422432</float>
+    <float>0.226803809</float>
+  </distances>
+  <directionMatters>false</directionMatters>
+  <scale>
+    <x>1</x>
+    <y>1</y>
+    <z>1</z>
+  </scale>
+</Pose>
