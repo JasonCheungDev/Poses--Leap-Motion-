@@ -7,11 +7,11 @@ public class Pose {
 
 	public float[] distances;		// Distance to each joint, specified by GetComponents<Transform>()
 	public bool directionMatters = false;	// Determines if the orientation of the pose matters, or if the pose can be seen/done in any direction.
-	public Vector3 scale;		    // LocalScale of the saved object (used for distance amplification) 
+	public float scale;		    // LocalScale of the saved object (used for distance amplification) 
 
 	public Pose() {}
 
-	public Pose(float[] distances, Vector3 scale = new Vector3()) {
+	public Pose(float[] distances, float scale = 1) {
 		this.distances = distances;
 		this.scale = scale;
 	}

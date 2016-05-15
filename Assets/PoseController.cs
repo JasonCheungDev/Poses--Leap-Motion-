@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
 using System.IO;
 using System.Xml.Serialization;
@@ -6,9 +7,11 @@ using System.Xml.Serialization;
 /* A script used to save, load, and create poses */
 public class PoseController : MonoBehaviour {
 
-	public float poseBuffer = 10f;
+	public float poseBuffer = 0.02f;
+	public Toggle matchDisplay;
 
 	private Transform[] parts;	// transforms of all child parts + this transform
+	private Pose target;
 
 	// Use this for initialization
 	void Start () {
@@ -17,7 +20,23 @@ public class PoseController : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-	
+		matchDisplay.isOn = comparePose (target);
+	}
+
+	public bool comparePose(Pose p) {
+
+		for (int i = 0; i < parts.Length; ++i) {
+			float currentDistance = Vector3.Distance (parts [0].position, parts [i].position);
+			float difference = Mathf.Abs (currentDistance - p.distances [i]);
+			Debug.Log (difference);
+			if (difference > poseBuffer) {
+				// no match 
+				return false;
+			}
+		}	
+
+		// all matched 
+		return true;
 	}
 
 	public void save() {
@@ -26,7 +45,9 @@ public class PoseController : MonoBehaviour {
 		for (int i = 0; i < parts.Length; ++i) {
 			distances [i] = Vector3.Distance (parts [0].position, parts [i].position);
 		}
-		Pose p = new Pose (distances, transform.localScale);
+		Pose p = new Pose (distances, transform.lossyScale.magnitude);
+		Debug.Log (transform.lossyScale);
+		Debug.Log (transform.lossyScale.magnitude);
 		Debug.Log (p.Print());
 		// Serialize object 
 		System.Xml.Serialization.XmlSerializer serializer = new System.Xml.Serialization.XmlSerializer (p.GetType ());
@@ -62,6 +83,8 @@ public class PoseController : MonoBehaviour {
 		}	
 
 		Debug.Log (p.Print ());
+
+		target = p;
 
 		Debug.Log ("Loaded pose!");
 	}
