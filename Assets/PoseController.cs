@@ -5,6 +5,7 @@ using Unity.Serialization;
 
 using Leap.Unity;
 
+using System;
 using System.Collections;
 using System.IO;
 using System.Xml.Serialization;
@@ -22,6 +23,12 @@ public class PoseController : MonoBehaviour {
 	private Transform[] parts;	// transforms of all child parts + this transform
 	private Pose target;
 
+	private Chirality Handiness { 
+		get {
+			return GetComponent<IHandModel> ().Handedness;
+		}
+	}
+
 	// Use this for initialization
 	void Start () {
 		parts = GetComponentsInChildren<Transform> ();	// Note: first one is always this 
@@ -33,7 +40,7 @@ public class PoseController : MonoBehaviour {
 	}
 
 	public bool comparePose(Pose p) {
-
+		/*
 		for (int i = 0; i < parts.Length; ++i) {
 			float currentDistance = Vector3.Distance (parts [0].position, parts [i].position);
 			float difference = Mathf.Abs (currentDistance - p.distances [i]);
@@ -42,13 +49,15 @@ public class PoseController : MonoBehaviour {
 				// no match 
 				return false;
 			}
-		}	
+		}
+		*/
 
 		// all matched 
 		return true;
 	}
 
 	public void save() {
+		/*
 		// Create pose object 
 		float[] distances = new float[parts.Length];
 		for (int i = 0; i < parts.Length; ++i) {
@@ -56,8 +65,14 @@ public class PoseController : MonoBehaviour {
 		}
 		Vector3 displacement = parts [0].position - parts [3].position;
 		Debug.Log ("displacement " + displacement);
+		*/
 
-		Pose p = new Pose (distances, GetComponent<IHandModel>().Handedness, transform.lossyScale.magnitude);
+		Vector3[] positions = new Vector3[parts.Length];
+		for (int i = 0; i < parts.Length; i++) {
+			positions [i] = parts [i].position;
+		}
+
+		Pose p = new Pose (positions, Handiness, transform.lossyScale.magnitude);
 
 		Debug.Log (transform.lossyScale);			// 10
 		Debug.Log (transform.lossyScale.magnitude);	// 17~
@@ -185,6 +200,8 @@ public class PoseController : MonoBehaviour {
 		FileStream file = File.Open (Application.persistentDataPath + "/" + fileName, FileMode.Open);
 
 		Pose p = (Pose)bf.Deserialize(file);
+		target = p;
+		ReformatPose (target);
 
 		file.Close ();
 
@@ -193,7 +210,65 @@ public class PoseController : MonoBehaviour {
 
 	}
 
-	public void create() {
+	#region Matching logic 
 
+	// Rename function, but does what it should do 
+	private void ReformatPose(Pose pose) {
+
+		// Only reformat if necessary 
+		if (pose.chiralityMatters) {
+
+			// Check if reformatting is needed 
+			if (Handiness != target.chirality) {
+
+				// Flip all coordinates (so left becomes right, right becomes left) 
+				for (int i = 0; i < pose.pointPosition.Length; i++) {
+					pose.pointPosition[i] = Vector3.Reflect (pose.pointPosition[i], Vector3.up);
+				}
+			}
+		}
+			
 	}
+
+	private bool poseIsMatching() {
+
+		float maxDist = 1.0f; // maxDist * target.scale.magnitude (something like that) 
+		float maxAngle = 5.0f; // 5 degrees 
+
+		if (target.chiralityMatters) 
+		{
+			if (Handiness != target.chirality)
+				return false; 
+		}
+
+		if (target.positionMatters) 
+		{
+			var dist = Vector3.Distance (
+				           transform.parent.transform.position,	// LeapHandController (root) 
+				           target.position
+			           ); 
+			if (dist > maxDist)
+				return false;
+		}
+
+		if (target.directionMatters) 
+		{
+			if (Quaternion.Angle (transform.rotation, target.direction) > maxAngle)
+				return false; 
+		}
+	
+		for (int i = 0; i < parts.Length; i++) 
+		{
+			if ((parts [i].position.x - target.pointPosition [i].x) > maxDist
+				|| (parts [i].position.y - target.pointPosition [i].y) > maxDist
+				|| (parts [i].position.z - target.pointPosition [i].z) > maxDist) 
+			{
+				return false; 
+			}
+		}
+
+		return true;
+	}
+
+	#endregion 
 }
